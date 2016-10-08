@@ -88,10 +88,64 @@ example (H : ∀ x : men, shaves barber x ↔ ¬shaves x x) : false :=
 
 --
 
-example : (∃ x : A, r) → r := sorry
-example : r → (∃ x : A, r) := sorry
-example : (∃ x, p x ∧ r) ↔ (∃ x, p x) ∧ r := sorry
-example : (∃ x, p x ∨ q x) ↔ (∃ x, p x) ∨ (∃ x, q x) := sorry
+
+example : (∃ x : A, r) → r :=
+  assume H : (∃ x : A, r),
+  obtain (w : A) (Hw : r), from H,
+  show r, from Hw
+
+example : r → (∃ x : A, r) :=
+  assume H : r,
+  show (∃ x : A, r), from
+    exists.intro a H
+
+example : (∃ x, p x ∧ r) ↔ (∃ x, p x) ∧ r :=
+  iff.intro
+    (assume H : (∃ x, p x ∧ r),
+
+     obtain w Hw, from H,
+     have Hr : r, from and.right Hw,
+     have Hpx : p w, from and.left Hw,
+     have Hepx : ∃ x, p x, from
+       exists.intro w Hpx,
+
+     show (∃ x, p x) ∧ r, from
+       and.intro Hepx Hr)
+
+    (assume H : (∃ x, p x) ∧ r,
+
+     have Hepx : ∃ x, p x, from and.left H,
+     have Hr : r, from and.right H,
+     obtain w Hpw, from Hepx,
+     have Hpwr : p w ∧ r, from
+       and.intro Hpw Hr,
+
+     show (∃ x, p x ∧ r), from
+       exists.intro w Hpwr)
+
+example : (∃ x, p x ∨ q x) ↔ (∃ x, p x) ∨ (∃ x, q x) :=
+  iff.intro
+    (assume H : (∃ x, p x ∨ q x),
+     obtain w Hw, from H,
+     or.elim Hw
+       (assume Hpw : p w,
+        show (∃ x, p x) ∨ _, from
+          or.inl (exists.intro w Hpw))
+       (assume Hqw : q w,
+        show _ ∨ (∃ x, q x), from
+          or.inr (exists.intro w Hqw)))
+
+    (assume H : (∃ x, p x) ∨ (∃ x, q x),
+     or.elim H
+       (assume Hepx : ∃ x, p x,
+        obtain w Hpw, from Hepx,
+        show (∃ x, p x ∨ _), from
+          exists.intro w (or.inl Hpw))
+       (assume Heqx : ∃ x, q x,
+        obtain w Hqw, from Heqx,
+        show (∃ x, _ ∨ q x), from
+          exists.intro w (or.inr Hqw)))
+
 
 --
 
